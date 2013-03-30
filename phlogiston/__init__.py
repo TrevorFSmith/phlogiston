@@ -1,0 +1,1 @@
+'''A Django app which maps Tasty Pie APIs to Backbone.js Models and Collections.'''

@@ -2,3 +2,7 @@
 *.pot
 *.pyc
 local_settings.py
+
+# These are created during packaging
+dist
+phlogiston.egg-info
