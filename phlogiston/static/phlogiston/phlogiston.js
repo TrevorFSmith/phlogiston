@@ -5,21 +5,30 @@ phlogiston.TastyPieSchema = Backbone.Model.extend({
 	initialize: function(attributes, options){
 		_.bindAll(this);
 		this.options = options;
+		this.api = {}; // This is where we will put the Backbone Models and Collections populated from the tasty pie schema
 		this.populated = false;
 		if(!this.options.url){
 			throw 'TastyPieSchema requires you to pass in a "url" option';
 		}
+		this.on('sync', this.populate);
 	},
 	url: function(){  this.options.url; },
 	populate: function(){
 		for(var name in this.attributes){
+			var namespaceMap = this.api;
+			var namespaces = phlogiston.parseResourceNameSpaces(name);
+			for(var i=0; i < namespaces.length; i++){
+				namespaceMap[namespaces[i]] = namespaceMap[namespaces[i]] || {};
+				namespaceMap = namespaceMap[namespaces[i]];
+			}
+
 			var resourceClassName = phlogiston.javascriptifyResourceName(name);
-			phlogiston[resourceClassName] = phlogiston.AbstractTastyPieModel.extend({
+			namespaceMap[resourceClassName] = phlogiston.AbstractTastyPieModel.extend({
 				list_endpoint: this.attributes[name].list_endpoint,
 			});
-			phlogiston[resourceClassName + 'Collection'] = phlogiston.AbstractTastyPieCollection.extend({
+			namespaceMap[resourceClassName + 'Collection'] = phlogiston.AbstractTastyPieCollection.extend({
 				list_endpoint: this.attributes[name].list_endpoint,
-				model: phlogiston[resourceClassName],
+				model: namespaceMap[resourceClassName],
 			});
 		}
 		this.populated = true;
@@ -30,8 +39,20 @@ phlogiston.TastyPieSchema = Backbone.Model.extend({
 phlogiston.initialCap = function(str){
 	return str.substring(0, 1).toUpperCase() + str.substring(1)
 }
-
+phlogiston.parseResourceNameSpaces = function(resourceName){
+	/*
+	Given a name like 'banana/monkey/typewriter-ribbon' return an array of ['banana', 'monkey']
+	*/
+	if(resourceName.indexOf('/') == -1) return [];
+	var tokens = resourceName.split('/');
+	tokens.pop();
+	return tokens;
+}
 phlogiston.javascriptifyResourceName = function(resourceName){
+	if(resourceName.indexOf('/') != -1){
+		resourceName = resourceName.split('/').pop();
+	}
+
 	var result = phlogiston.initialCap(resourceName);
 	while(result.indexOf('-') != -1){
 		var index = result.indexOf('-');
@@ -86,8 +107,8 @@ phlogiston.AbstractTastyPieCollection = Backbone.Collection.extend({
 	initialize: function(models, options){
 		_.bindAll(this, 'url', 'pageUp', 'pageDown', 'page');
 		this.options = options || {};
-		this.limit = this.options.limit ? parseInt(this.options.limit) : 50;
-		this.offset = this.options.offset ? parseInt(this.options.offset) : 0;
+		this.limit = typeof this.options.limit != 'undefined' ? parseInt(this.options.limit) : 50;
+		this.offset = typeof this.options.offset != 'undefined' ? parseInt(this.options.offset) : 0;
 	},
 	pageUp: function(){ this.page(-1); },
 	pageDown: function(){ this.page(1); },
@@ -191,6 +212,9 @@ phlogiston.UrlLoader = Backbone.Model.extend({
     initialize: function(attributes, options){
     	this.options = options;
     	if(!this.options.url) throw 'UrlLoader requires a "url" option'
+
+    	this.urls = {}; // This is where we will put the URL functions derived from the URL JSON.
+
         this.on('change', this.populate);
     },
     url: function(){
@@ -199,7 +223,7 @@ phlogiston.UrlLoader = Backbone.Model.extend({
     populate: function(){
         var patterns = this.get('patterns');
         for(var i=0; i < patterns.length; i++){
-            phlogiston.urls[phlogiston.cleanPathElement(patterns[i].name)] = phlogiston.createUrlFuction(patterns[i], '/');
+            this.urls[phlogiston.cleanPathElement(patterns[i].name)] = phlogiston.createUrlFuction(patterns[i], '/');
         }
         var resolvers = this.get('resolvers');
         for(var i=0; i < resolvers.length; i++){
@@ -209,7 +233,7 @@ phlogiston.UrlLoader = Backbone.Model.extend({
                 var pattern = resolvers[i].patterns[j];
                 resolver_patterns[phlogiston.cleanPathElement(pattern.name)] = phlogiston.createUrlFuction(pattern, resolverPrefix)
             }
-            phlogiston.urls[phlogiston.cleanPathElement(resolvers[i].name)] = resolver_patterns;
+            this.urls[phlogiston.cleanPathElement(resolvers[i].name)] = resolver_patterns;
         }
         this.trigger('populated');
     }
