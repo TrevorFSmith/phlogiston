@@ -94,7 +94,7 @@ phlogiston.apiSync = function(method, model, options){
 phlogiston.AbstractTastyPieModel = Backbone.Model.extend({
 	url: function(){
 		if(typeof this.get('id') == 'undefined') return this.list_endpoint;
-		return this.list_endpoint + this.get('id');
+		return this.list_endpoint + this.get('id') + '/';
 	},
 
 	schemaUrl: function(){
