@@ -1,5 +1,42 @@
 
 var phlogiston = phlogiston || {};
+phlogiston.events = phlogiston.events || {};
+
+phlogiston.events.fetchComplete = 'fetch-complete';
+phlogiston.events.fetchSuccess = 'fetch-success';
+phlogiston.events.fetchError = 'fetch-error';
+
+phlogiston.Fetcher = function(options){
+	/*
+	Create like so: new phlogiston.Fetcher({options}, ModelOrCollection, ModelOrCollection, ...)
+	Fetches all of the Models or Collections and waits until they're all finished and triggers a fetchComplete on itself
+	*/
+	this.fetchables = []; // A 2D array of [Model/Collection, isFetched]
+	for(var i=1; i < arguments.length; i++){
+		var info = this.fetchables[i-1] = [arguments[i], false];
+		arguments[i].once('sync', _.bind(function(){
+			this[1] = true;
+		}, info));
+		arguments[i].once('sync', _.bind(function(){
+			if(this.completed()) this.trigger(phlogiston.events.fetchComplete, this);
+		}, this));
+	}
+    this.initialize.apply(this, arguments);
+};
+_.extend(phlogiston.Fetcher.prototype, Backbone.Events, {
+	initialize: function(){ /* override as needed */},
+	fetch: function(){
+		for(var i=0; i < this.fetchables.length; i++){
+			this.fetchables[i][0].fetch();
+		}
+	},
+	completed: function(){
+		for(var i=0; i < this.fetchables.length; i++){
+			if(this.fetchables[i][1] == false) return false;
+		}
+		return true;
+	}
+});
 
 phlogiston.TastyPieSchema = Backbone.Model.extend({
 	initialize: function(attributes, options){
