@@ -1,14 +1,18 @@
+import os
 import re
-from transmutable.urls import urlpatterns
+import importlib
+
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core.urlresolvers import RegexURLPattern, RegexURLResolver
 
 def generate_url_resource():
+	root_urlconf = importlib.import_module(settings.ROOT_URLCONF)
 	result = {
 		'patterns':[], 
 		'resolvers':[]
 	}
-	for item in urlpatterns:
+	for item in root_urlconf.urlpatterns:
 		if item.__class__ == RegexURLResolver:
 			result['resolvers'].append(flatten_url_resolver(item))
 		elif item.__class__ == RegexURLPattern:
