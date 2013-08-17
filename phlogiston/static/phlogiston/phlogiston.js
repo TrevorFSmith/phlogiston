@@ -171,11 +171,28 @@ phlogiston.AbstractTastyPieCollection = Backbone.Collection.extend({
 phlogiston.AbstractTastyPieCollection.prototype.sync = phlogiston.apiSync;
 
 phlogiston.parseJsonDate = function(jsonDate){
+	// parse a datetime string like 2013-08-16T20:11:05
 	var dateString = jsonDate.split('T')[0];
 	var dateArray = dateString.split('-');
 	var date = new Date(dateArray[1] + ' ' + dateArray[2] + ' ' + dateArray[0]);
 	var timeArray = jsonDate.split('T')[1].split(':');
 	return new Date(date.getFullYear(), date.getMonth(), date.getDate(), parseInt(timeArray[0], 10), parseInt(timeArray[1], 10), parseInt(timeArray[2], 10));
+}
+
+phlogiston.padString = function(val, len, padding){
+	if(!val) val = '';
+	val = val + '';
+	if(!padding) padding = ' ';
+	while(val.length < len){
+		val = padding + val;
+	}
+	return val;
+}
+
+phlogiston.formatJsonDate = function(date){
+	// return a datetime string like 2013-08-16T20:11:05
+	var dateString = date.getFullYear() + '-' + phlogiston.padString(date.getMonth() + 1, 2, '0') + '-' + phlogiston.padString(date.getDate(), 2, '0');
+	return dateString + 'T' + phlogiston.padString(date.getHours(), 2, '0') + ':' + phlogiston.padString(date.getMinutes(), 2, '0') + ':' + phlogiston.padString(date.getSeconds(), 2, '0');
 }
 
 phlogiston.formatDate = function(jsDate){
