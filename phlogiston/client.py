@@ -87,7 +87,7 @@ class Resource(object):
 
 	def get_list(self):
 		list_data, error = self.client._get_json(self.list_endpoint)
-		if error: raise IOError
+		if error: raise IOError('Bad status %s' % error)
 		return list_data['objects']
 
 	def get_detail(self, *args, **kwargs): pass
