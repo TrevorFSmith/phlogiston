@@ -162,7 +162,7 @@ phlogiston.AbstractTastyPieCollection = Backbone.Collection.extend({
 		}
 		if(this.options.filters){
 			for(var name in this.options.filters){
-				result = result + '&' + name + '=' + this.options.filters[name];
+				result = result + '&' + encodeURIComponent(name) + '=' + encodeURIComponent(this.options.filters[name]);
 			}
 		}
 		return result;

@@ -10,6 +10,7 @@ setup(
 	name = 'phlogiston',
 	version = '0.1',
 	packages = ['phlogiston'],
+	install_requires='requests',
 	include_package_data = True,
 	license = 'MIT License', # example license
 	description = 'A Django app which maps Tasty Pie APIs to Backbone.js Models and Collections',
