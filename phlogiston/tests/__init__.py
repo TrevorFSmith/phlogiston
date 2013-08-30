@@ -4,6 +4,7 @@ import logging
 import traceback
 from datetime import datetime, timedelta, date
 
+from django import forms
 from django.db import models
 from django.conf import settings
 from django.db.models import signals
@@ -17,6 +18,7 @@ from tastypie import fields
 from tastypie.bundle import Bundle
 from tastypie.utils import trailing_slash
 from tastypie.api import NamespacedApi, Api
+from tastypie.validation import FormValidation
 from tastypie.authorization import DjangoAuthorization, Authorization
 from tastypie.authentication import Authentication, SessionAuthentication
 from tastypie.resources import Resource, ModelResource, ALL, ALL_WITH_RELATIONS
@@ -42,10 +44,24 @@ def create_solar_system():
 
 TEST_API = Api(api_name='test')
 
+class PlanetForm(forms.ModelForm):
+	def __init__(self, *args, **kwargs):
+		print 'initing'
+		return super(PlanetForm, self).__init__(*args, **kwargs)
+
+	def is_valid(self, *args, **kwargs):
+		print 'pf', self.data
+		return super(PlanetForm, self).is_valid(*args, **kwargs)
+
+	class Meta:
+		model = Planet
+		fields = ('name', 'id')
+
 class PlanetResource(ModelResource):
 	class Meta:
 		queryset = Planet.objects.all()
 		resource_name = 'space/planet'
+		validation = FormValidation(form_class=PlanetForm)
 		fields = ['name', 'id']
 		allowed_methods = ['get', 'put', 'post', 'delete']
 		filtering = { 'name': ALL }

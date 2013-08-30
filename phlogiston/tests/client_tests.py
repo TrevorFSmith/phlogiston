@@ -29,3 +29,11 @@ class ClientTests(LiveServerTestCase):
 		self.assertEqual(len(planets), Planet.objects.count())
 		moons = client.get_space_moon_list()
 		self.assertEqual(len(moons), Moon.objects.count())
+
+		mercury = client.get_space_planet(planets[0]['id'])
+		self.assertEqual(mercury['name'], 'Mercury')
+		mercury['name'] = 'Tiny Fast Hot One'
+		mercury = client.put_space_planet(mercury['id'], data=mercury)
+		self.assertEqual(mercury['name'], 'Tiny Fast Hot One')
+		mercury = client.get_space_planet(planets[0]['id'])
+		self.assertEqual(mercury['name'], 'Tiny Fast Hot One')
