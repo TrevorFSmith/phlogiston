@@ -1,5 +1,7 @@
 # Phlogiston
 
+NOTE: The Django world has moved mostly to [Django REST Framework](http://www.django-rest-framework.org/) instead of Tasty Pie so you should probably use that instead of this code.
+
 A [Django](https://www.djangoproject.com/) app which maps [Tasty Pie](http://tastypieapi.org/) APIs to [Backbone.js](http://backbonejs.org/) Models and Collections
 
 Quick start
